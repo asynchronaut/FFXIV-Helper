@@ -3,6 +3,7 @@ package com.example.android.ffxivhelper;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,8 +13,13 @@ import android.widget.TextView;
 
 import com.example.android.ffxivhelper.utils.NetworkUtils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         new xivapiQueryTask().execute(xivapiSearchUrl);
     }
 
-    // COMPLETED (14) Create a method called showJsonDataView to show the data and hide the error
     /**
      * This method will make the View for the JSON data visible and
      * hide the error message.
@@ -63,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         mSearchResultsTextView.setVisibility(View.VISIBLE);
     }
 
-    // COMPLETED (15) Create a method called showErrorMessage to show the error and hide the data
     /**
      * This method will make the error message visible and hide the JSON
      * View.
@@ -78,9 +82,8 @@ public class MainActivity extends AppCompatActivity {
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
-    public class xivapiQueryTask extends AsyncTask<URL, Void, String> {
+    public class xivapiQueryTask extends AsyncTask<URL, Void, JSONObject> {
 
-        // COMPLETED (26) Override onPreExecute to set the loading indicator to visible
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -88,27 +91,42 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(URL... params) {
+        protected JSONObject doInBackground(URL... params) {
             URL searchUrl = params[0];
             String xivapiSearchResults = null;
+            JSONObject jsonResults = null;
             try {
                 xivapiSearchResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                jsonResults = new JSONObject(xivapiSearchResults);
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (final JSONException e) {
+                Log.e("FAILED", "Json parsing error: " + e.getMessage());
             }
-            return xivapiSearchResults;
+            return jsonResults;
         }
 
         @Override
-        protected void onPostExecute(String xivapiSearchResults) {
-            // COMPLETED (27) As soon as the loading is complete, hide the loading indicator
+        protected void onPostExecute(JSONObject jsonResults) {
+            //TODO: Shift the JSON parsing out to a function (or even class of functions)
+            //TODO: Handle multiple pages of results
             mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (xivapiSearchResults != null && !xivapiSearchResults.equals("")) {
-                // COMPLETED (17) Call showJsonDataView if we have valid, non-null results
+            if (jsonResults != null && !jsonResults.equals("")) {
                 showJsonDataView();
-                mSearchResultsTextView.setText(xivapiSearchResults);
+                String formattedResults = "";
+                try {
+                    JSONArray resultsList = jsonResults.getJSONArray("Results");
+                    for (int i = 0; i < resultsList.length(); i++) {
+                        JSONObject result = resultsList.getJSONObject(i);
+                        String name = result.getString("Name");
+                        String ID = result.getString("ID");
+                        formattedResults += name + ": " + ID + "\n";
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                mSearchResultsTextView.setText(formattedResults);
             } else {
-                // COMPLETED (16) Call showErrorMessage if the result is null in onPostExecute
                 showErrorMessage();
             }
         }
