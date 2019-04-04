@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">FFXIV Helper</string>
+
+    <string-array name="array_mounts">
+        <item>1:Company Chocobo</item>
+        <item>4:Goobbue</item>
+        <item>5:Legacy Chocobo</item>
+        <item>6:Magitek Armor</item>
+        <item>8:Coeurl</item>
+        <item>9:Ahriman</item>
+        <item>15:Unicorn</item>
+        <item>18:Behemoth</item>
+        <item>19:Cavalry Drake</item>
+        <item>20:Laurel Goobbue</item>
+        <item>21:Gilded Magitek Armor</item>
+    </string-array>
 </resources>
