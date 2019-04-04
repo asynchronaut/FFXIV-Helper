@@ -3,6 +3,8 @@ package com.example.android.ffxivhelper;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.ffxivhelper.utils.NetworkUtils;
 
@@ -19,15 +22,17 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ResultsAdapter.ListItemClickListener {
 
     private EditText mSearchBoxEditText;
     private TextView mUrlDisplayTextView;
-    private TextView mSearchResultsTextView;
+    private RecyclerView mResultsRecyclerView;
+    private ResultsAdapter mResultsAdapter;
+    private RecyclerView.LayoutManager layoutManager;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
+    private Toast mToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
         mSearchBoxEditText = findViewById(R.id.et_search_box);
         mUrlDisplayTextView = findViewById(R.id.tv_url_display);
-        mSearchResultsTextView = findViewById(R.id.tv_xivapi_search_results_json);
+        mResultsRecyclerView = findViewById(R.id.rv_results);
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+
+        layoutManager = new LinearLayoutManager(this);
+        mResultsRecyclerView.setLayoutManager(layoutManager);
+        mResultsAdapter = new ResultsAdapter(this);
+        mResultsRecyclerView.setAdapter(mResultsAdapter);
     }
 
     /**
@@ -65,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         // First, make sure the error is invisible
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         // Then, make sure the JSON data is visible
-        mSearchResultsTextView.setVisibility(View.VISIBLE);
+        mResultsRecyclerView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -77,9 +87,18 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showErrorMessage() {
         // First, hide the currently visible data
-        mSearchResultsTextView.setVisibility(View.INVISIBLE);
+        mResultsRecyclerView.setVisibility(View.INVISIBLE);
         // Then, show the error
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onListItemClick(int clickedItemIndex) {
+        String id = mResultsAdapter.getResultId(clickedItemIndex);
+        String toastMessage = "ID:" + id;
+        mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
+
+        mToast.show();
     }
 
     public class xivapiQueryTask extends AsyncTask<URL, Void, JSONObject> {
@@ -113,19 +132,20 @@ public class MainActivity extends AppCompatActivity {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (jsonResults != null && !jsonResults.equals("")) {
                 showJsonDataView();
-                String formattedResults = "";
+                ResultObject[] results = null;
                 try {
                     JSONArray resultsList = jsonResults.getJSONArray("Results");
+                    results = new ResultObject[resultsList.length()];
                     for (int i = 0; i < resultsList.length(); i++) {
                         JSONObject result = resultsList.getJSONObject(i);
                         String name = result.getString("Name");
                         String ID = result.getString("ID");
-                        formattedResults += name + ": " + ID + "\n";
+                        results[i] = new ResultObject(name, ID);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                mSearchResultsTextView.setText(formattedResults);
+                mResultsAdapter.setResultsData(results);
             } else {
                 showErrorMessage();
             }
