@@ -32,6 +32,8 @@ public class NetworkUtils {
 
     final static String XIVAPI_BASE_URL =
             "https://xivapi.com/character/search";
+    final static String XIVAPI_CHARACTER_URL =
+            "https://xivapi.com/character";
 
     final static String PARAM_NAME = "name";
     final static String PARAM_SERVER = "server";
@@ -56,6 +58,22 @@ public class NetworkUtils {
         Uri builtUri = Uri.parse(XIVAPI_BASE_URL).buildUpon()
                 .appendQueryParameter(PARAM_NAME, xivapiSearchQuery)
                 .appendQueryParameter(PARAM_SERVER, "Goblin")
+                .appendQueryParameter(PARAM_KEY,API_KEY)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildCharacterUrl(String characterId) {
+        Uri builtUri = Uri.parse(XIVAPI_CHARACTER_URL).buildUpon()
+                .appendPath(characterId)
                 .appendQueryParameter(PARAM_KEY,API_KEY)
                 .build();
 

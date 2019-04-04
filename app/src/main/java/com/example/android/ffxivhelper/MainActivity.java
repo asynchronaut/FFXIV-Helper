@@ -1,5 +1,6 @@
 package com.example.android.ffxivhelper;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -94,11 +95,12 @@ public class MainActivity extends AppCompatActivity implements ResultsAdapter.Li
 
     @Override
     public void onListItemClick(int clickedItemIndex) {
-        String id = mResultsAdapter.getResultId(clickedItemIndex);
-        String toastMessage = "ID:" + id;
-        mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
 
-        mToast.show();
+        String id = mResultsAdapter.getResultId(clickedItemIndex);
+
+        Intent intent = new Intent(this, CharacterViewActivity.class);
+        intent.putExtra(Intent.EXTRA_TEXT, id);
+        startActivity(intent);
     }
 
     public class xivapiQueryTask extends AsyncTask<URL, Void, JSONObject> {
