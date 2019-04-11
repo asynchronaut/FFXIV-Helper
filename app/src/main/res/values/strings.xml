@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">FFXIV Helper</string>
+    <string name="error_query_uri">Bad URI for query: </string>
+    <string name="error_get_type_uri">Bad URI for get type:</string>
+    <string name="error_insert_uri">Bad URI for insert:</string>
+    <string name="error_update_uri">Bad URI for update:</string>
+    <string name="error_update_fail">Update fail</string>
 
     <string-array name="array_mounts">
         <item>1:Company Chocobo</item>

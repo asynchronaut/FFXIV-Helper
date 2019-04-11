@@ -55,7 +55,7 @@ public class CollectibleObject {
             "Warlion",
             "Warbear",
             "Draught Chocobo",
-            "Direworf",
+            "Direwolf",
             "Storm Warsteed",
             "Serpent Warsteed",
             "Flame Warsteed",
