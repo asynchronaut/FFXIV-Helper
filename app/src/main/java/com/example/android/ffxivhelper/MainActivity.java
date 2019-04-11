@@ -1,6 +1,8 @@
 package com.example.android.ffxivhelper;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.ffxivhelper.data.CollectiblesContract;
+import com.example.android.ffxivhelper.data.CollectiblesDbHelper;
 import com.example.android.ffxivhelper.utils.NetworkUtils;
 
 import org.json.JSONArray;
@@ -50,6 +54,12 @@ public class MainActivity extends AppCompatActivity implements ResultsAdapter.Li
         mResultsRecyclerView.setLayoutManager(layoutManager);
         mResultsAdapter = new ResultsAdapter(this);
         mResultsRecyclerView.setAdapter(mResultsAdapter);
+
+        CollectiblesDbHelper dbHelper = new CollectiblesDbHelper(this);
+        try {
+            dbHelper.createDataBase();
+        }
+        catch (IOException e) {e.printStackTrace();}
     }
 
     /**
@@ -163,11 +173,20 @@ public class MainActivity extends AppCompatActivity implements ResultsAdapter.Li
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemThatWasClickedId = item.getItemId();
-        if (itemThatWasClickedId == R.id.action_search) {
-            makeXivapiSearchQuery();
-            return true;
+        switch (itemThatWasClickedId) {
+            case R.id.action_search:
+                makeXivapiSearchQuery();
+                return true;
+            case R.id.action_db:
+                launchDbActivity();
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void launchDbActivity() {
+        Intent intent = new Intent(this, DatabaseActivity.class);
+        startActivity(intent);
     }
 
 }

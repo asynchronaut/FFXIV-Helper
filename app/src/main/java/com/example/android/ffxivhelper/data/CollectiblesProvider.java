@@ -115,6 +115,10 @@ public class CollectiblesProvider extends ContentProvider {
         switch (match) {
             case MOUNTS:
                 return updateMounts(uri,values,selection,selectionArgs);
+            case MOUNT:
+                selection = MountEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updateMounts(uri, values, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException(
                         getContext().getResources().getString(R.string.error_update_uri) + uri);

@@ -1,6 +1,10 @@
 package com.example.android.ffxivhelper;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.android.ffxivhelper.data.CollectiblesContract;
 import com.example.android.ffxivhelper.utils.NetworkUtils;
 
 import org.json.JSONArray;
@@ -90,10 +95,21 @@ public class CharacterViewActivity extends AppCompatActivity {
                     JSONArray mountData = characterData.getJSONArray("Mounts");
                     Log.d("MOUNTS", String.valueOf(mountData.length()) + " mounts found.");
                     results = new CollectibleObject[mountData.length()];
+
+                    ContentResolver contentResolver = getContentResolver();
+                    Uri uri = null;
+
                     for (int i = 0; i < mountData.length(); i++) {
                         String mountId = mountData.getString(i);
                         Log.d("MOUNTS", "Mount " + mountId + " located.");
                         results[i] = new CollectibleObject(mountId,0); //TODO: Pass correct type
+
+                        uri = ContentUris.withAppendedId(
+                                CollectiblesContract.MountEntry.CONTENT_URI,
+                                Integer.parseInt(mountId));
+                        ContentValues values = new ContentValues();
+                        values.put(CollectiblesContract.MountEntry.COLUMN_CHAR1, 1);
+                        contentResolver.update(uri, values, null, null);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

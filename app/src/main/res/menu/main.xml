@@ -21,4 +21,10 @@
         android:orderInCategory="1"
         app:showAsAction="ifRoom"
         android:title="Search"/>
+
+    <item
+        android:id="@+id/action_db"
+        android:orderInCategory="2"
+        app:showAsAction="ifRoom"
+        android:title="DB" />
 </menu>
