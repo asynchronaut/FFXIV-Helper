@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,8 @@ public class CharacterViewActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private CollectibleAdapter mMountAdapter;
 
+    private String characterId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +51,7 @@ public class CharacterViewActivity extends AppCompatActivity {
 
         if (intentThatStartedThisActivity != null) {
             if (intentThatStartedThisActivity.hasExtra(Intent.EXTRA_TEXT)) {
-                String characterId = intentThatStartedThisActivity.getStringExtra(Intent.EXTRA_TEXT);
+                characterId = intentThatStartedThisActivity.getStringExtra(Intent.EXTRA_TEXT);
                 makeXivapiCharacterQuery(characterId);
             }
         }
@@ -90,14 +93,17 @@ public class CharacterViewActivity extends AppCompatActivity {
             if (jsonResults != null && !jsonResults.equals("")) {
                 //showJsonDataView();
                 CollectibleObject[] results = null;
+                ContentResolver contentResolver = getContentResolver();
+                Uri uri = null;
+                String characterName = "";
+                String characterServer = "";
                 try {
                     JSONObject characterData = jsonResults.getJSONObject("Character");
+                    characterName = characterData.getString("Name");
+                    characterServer = characterData.getString("Server");
                     JSONArray mountData = characterData.getJSONArray("Mounts");
                     Log.d("MOUNTS", String.valueOf(mountData.length()) + " mounts found.");
                     results = new CollectibleObject[mountData.length()];
-
-                    ContentResolver contentResolver = getContentResolver();
-                    Uri uri = null;
 
                     for (int i = 0; i < mountData.length(); i++) {
                         String mountId = mountData.getString(i);
@@ -118,6 +124,18 @@ public class CharacterViewActivity extends AppCompatActivity {
                     Log.d("MOUNTS", "No mounts found.");
                 }
                 else {
+                    uri = ContentUris.withAppendedId(CollectiblesContract.ProfileEntry.CONTENT_URI, 1); //TODO: don't hardcode this id
+                    Cursor cursor = getContentResolver().query(uri,null,null,null,null);
+                    cursor.moveToFirst();
+                    int char_id = Integer.parseInt(characterId);
+
+                    ContentValues values = new ContentValues();
+                    values.put(CollectiblesContract.ProfileEntry.COLUMN_ID,char_id);
+                    values.put(CollectiblesContract.ProfileEntry.COLUMN_NAME, characterName);
+                    values.put(CollectiblesContract.ProfileEntry.COLUMN_SERVER, characterServer);
+
+                    contentResolver.update(uri,values,null,null);
+
                     mMountAdapter.setResultsData(results);
                     mMountsRecyclerView.setVisibility(View.VISIBLE);
                 }
