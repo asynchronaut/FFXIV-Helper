@@ -9,9 +9,12 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,6 +34,7 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity implements ResultsAdapter.ListItemClickListener {
 
     private EditText mSearchBoxEditText;
+    private Button mSearchButton;
     private TextView mUrlDisplayTextView;
     private RecyclerView mResultsRecyclerView;
     private ResultsAdapter mResultsAdapter;
@@ -45,16 +49,52 @@ public class MainActivity extends AppCompatActivity implements ResultsAdapter.Li
         setContentView(R.layout.activity_main);
 
         mSearchBoxEditText = findViewById(R.id.et_search_box);
+        mSearchButton = findViewById(R.id.btn_search);
         mUrlDisplayTextView = findViewById(R.id.tv_url_display);
         mResultsRecyclerView = findViewById(R.id.rv_results);
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
+        // Clicking Search in keyboard searches
+        mSearchBoxEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    makeXivapiSearchQuery();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        // Pressing Enter searches
+        mSearchBoxEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN &&
+                    event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    makeXivapiSearchQuery();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        // Clicking search button also searches
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                makeXivapiSearchQuery();
+            }
+        });
+
+        // Set up RecyclerView adapter
         layoutManager = new LinearLayoutManager(this);
         mResultsRecyclerView.setLayoutManager(layoutManager);
         mResultsAdapter = new ResultsAdapter(this);
         mResultsRecyclerView.setAdapter(mResultsAdapter);
 
+        // Copy database from assets if it doesn't exist
         CollectiblesDbHelper dbHelper = new CollectiblesDbHelper(this);
         try {
             dbHelper.createDataBase();
@@ -174,9 +214,6 @@ public class MainActivity extends AppCompatActivity implements ResultsAdapter.Li
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemThatWasClickedId = item.getItemId();
         switch (itemThatWasClickedId) {
-            case R.id.action_search:
-                makeXivapiSearchQuery();
-                return true;
             case R.id.action_db:
                 launchDbActivity();
                 return true;
