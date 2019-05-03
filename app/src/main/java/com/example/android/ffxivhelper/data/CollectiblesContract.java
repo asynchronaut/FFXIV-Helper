@@ -19,6 +19,7 @@ public final class CollectiblesContract  {
         public static final String COLUMN_ID = "char_id";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_SERVER = "server";
+        public static final String COLUMN_UPDATED = "last_updated";
 
         public static final String CONTENT_LIST_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PROFILES;

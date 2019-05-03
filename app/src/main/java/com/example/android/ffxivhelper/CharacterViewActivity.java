@@ -69,6 +69,7 @@ public class CharacterViewActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             //mLoadingIndicator.setVisibility(View.VISIBLE);
+            Log.d("QUERY_TASK", "New query");
         }
 
         @Override
@@ -90,6 +91,7 @@ public class CharacterViewActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(JSONObject jsonResults) {
             //mLoadingIndicator.setVisibility(View.INVISIBLE);
+            Log.d("QUERY_TASK", "Query complete");
             if (jsonResults != null && !jsonResults.equals("")) {
                 //showJsonDataView();
                 CollectibleObject[] results = null;
@@ -128,11 +130,13 @@ public class CharacterViewActivity extends AppCompatActivity {
                     Cursor cursor = getContentResolver().query(uri,null,null,null,null);
                     cursor.moveToFirst();
                     int char_id = Integer.parseInt(characterId);
+                    long currentTime = System.currentTimeMillis();
 
                     ContentValues values = new ContentValues();
                     values.put(CollectiblesContract.ProfileEntry.COLUMN_ID,char_id);
                     values.put(CollectiblesContract.ProfileEntry.COLUMN_NAME, characterName);
                     values.put(CollectiblesContract.ProfileEntry.COLUMN_SERVER, characterServer);
+                    values.put(CollectiblesContract.ProfileEntry.COLUMN_UPDATED, currentTime);
 
                     contentResolver.update(uri,values,null,null);
 
